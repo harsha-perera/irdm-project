@@ -3,9 +3,10 @@
  */
 package irdm.project.pagerank;
 
+import java.util.Collection;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * @author Harsha Perera
@@ -14,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class WebGraph {
 
-	ConcurrentHashMap<String, Vector<String>> outgoingUrls;
-	ConcurrentHashMap<String, Vector<String>> incomingUrls;
+	private ConcurrentHashMap<String, Collection<String>> outgoingUrls;
+	private ConcurrentHashMap<String, ConcurrentLinkedDeque<String>> incomingUrls;
 	
 	public WebGraph() {
 		super();
@@ -24,11 +25,10 @@ public class WebGraph {
 	}
 
 
-	public void addPage(String url, Vector<String> outgoingLinks){
+	public void addPage(String url, Collection<String> outgoingLinks){
 		outgoingUrls.put(url, outgoingLinks);
 		for (String targetUrl : outgoingLinks) {
-			outgoingUrls.computeIfAbsent(targetUrl, k -> new Vector<>());
-			Vector<String> incomingUrlsForTarget = incomingUrls.computeIfAbsent(targetUrl, k -> new Vector<>());
+			ConcurrentLinkedDeque<String> incomingUrlsForTarget = incomingUrls.computeIfAbsent(targetUrl, k -> new ConcurrentLinkedDeque<>());
 			incomingUrlsForTarget.add(url);
 		}
 	}
@@ -41,11 +41,11 @@ public class WebGraph {
 		return outgoingUrls.keySet();		
 	}
 	
-    public Vector<String> getIncomingLinks(String url){
+    public Collection<String> getIncomingLinks(String url){
 		return incomingUrls.get(url);
 	}
     
-    public Vector<String> getOutgoingLinks(String url){
+    public Collection<String> getOutgoingLinks(String url){
 		return outgoingUrls.get(url);
 	}
 	
