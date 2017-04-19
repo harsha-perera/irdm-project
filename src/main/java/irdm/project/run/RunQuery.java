@@ -59,7 +59,7 @@ public class RunQuery {
 	public static void main(String[] args) {
 		TerrierInitialiser.InitTerrier();
 		try {
-			batchSearch(ApplicationConfig.HomePath + File.separator + "QueryTerms.csv", RetrievalModelNames.BM25, false, ApplicationConfig.HomePath + File.separator + "QueryResultsBM25.csv");
+			batchSearch(ApplicationConfig.HomePath + File.separator + "QueryTerms.csv", RetrievalModelNames.DrichletLM, true, ApplicationConfig.HomePath + File.separator + "QueryResultsDrichletLM_LinkAnalysis.csv");
 			System.out.println("Finished Batch Search");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -147,9 +147,8 @@ public class RunQuery {
 			// Skip header
 			recordsIterator.next();
 		}
-		for (CSVRecord record = recordsIterator.next(); recordsIterator.hasNext();record = recordsIterator.next()){			
-//		}
-//		for (CSVRecord record : records) {
+		while(recordsIterator.hasNext()){	
+			CSVRecord record = recordsIterator.next();
 			// Run the query
 			String query = record.get(query_idx);
 			SearchRequest srq = queryingManager.newSearchRequest("query", query);
