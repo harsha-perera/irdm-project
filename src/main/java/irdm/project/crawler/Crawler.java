@@ -5,10 +5,11 @@ package irdm.project.crawler;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.terrier.indexing.TaggedDocument;
@@ -111,16 +112,19 @@ public class Crawler extends WebCrawler {
 		}
 
 		Set<WebURL> links = htmlParseData.getOutgoingUrls();
-		Vector<String> outgoingLinks = new Vector<>(links.size());
+		Map<String,List<String>> outgoingLinkData = new HashMap<String,List<String>>(links.size());
 		for (WebURL webUrl : links) {
-			if(webUrl.getURL().equals(url)){
+			String targetUrl = webUrl.getURL();
+			if(targetUrl.equals(url)){
 				continue;
 			}
 			
-			if (shouldVisit(webUrl.getURL())) {
-				outgoingLinks.add(webUrl.getURL());
+			if (shouldVisit(targetUrl)) {				
+				List<String> anchorTextList = outgoingLinkData.computeIfAbsent(targetUrl,k-> new ArrayList<String>());
+				anchorTextList.add(webUrl.getAnchor());
 			}
 		}
-		this.webGraph.addPage(url, outgoingLinks);
+		this.webGraph.addPage(url, outgoingLinkData);
+
 	}
 }

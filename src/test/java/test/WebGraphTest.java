@@ -5,7 +5,10 @@ package test;
 
 import static org.junit.Assert.*;
 
-import java.util.Vector;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -20,13 +23,14 @@ public class WebGraphTest {
     @Test
     public void testNodeCount() {
     	WebGraph graph = new WebGraph();
-    	Vector<String> outgoing_1 = new Vector<>();
-    	outgoing_1.add("2.html");
-    	outgoing_1.add("3.html");    	
+    	Map<String,List<String>> outgoing_1 = new HashMap<String, List<String>>();
+    	outgoing_1.put("2.html",Arrays.asList("2"));
+    	outgoing_1.put("3.html",Arrays.asList("3"));   	
     	graph.addPage("1.html", outgoing_1);
-    	Vector<String> outgoing_3 = new Vector<>();
-    	outgoing_3.add("4.html");
-    	outgoing_3.add("5.html");
+    	
+    	Map<String,List<String>> outgoing_3 = new HashMap<String, List<String>>();
+    	outgoing_3.put("4.html",Arrays.asList("4"));
+    	outgoing_3.put("5.html",Arrays.asList("5"));    	
     	graph.addPage("3.html", outgoing_3);    	
         assertEquals(5, graph.getTotalPageCount());        
     }
@@ -34,18 +38,19 @@ public class WebGraphTest {
     @Test
     public void testOutgoingLinks() {
     	WebGraph graph = new WebGraph();
-    	Vector<String> outgoing_1 = new Vector<>();
-    	outgoing_1.add("2.html");
-    	outgoing_1.add("3.html");    	
+    	Map<String,List<String>> outgoing_1 = new HashMap<String, List<String>>();
+    	outgoing_1.put("2.html",Arrays.asList("2"));
+    	outgoing_1.put("3.html",Arrays.asList("3"));   	    	
     	graph.addPage("1.html", outgoing_1);
-    	Vector<String> outgoing_2 = new Vector<>();
-    	outgoing_2.add("4.html");
-    	outgoing_2.add("6.html");
-    	graph.addPage("2.html", outgoing_2);    	
     	
-    	Vector<String> outgoing_3 = new Vector<>();
-    	outgoing_3.add("4.html");
-    	outgoing_3.add("5.html");
+    	Map<String,List<String>> outgoing_2 = new HashMap<String, List<String>>();
+    	outgoing_2.put("6.html",Arrays.asList("6"));
+    	outgoing_2.put("4.html",Arrays.asList("4"));
+    	graph.addPage("2.html", outgoing_2);    	  	
+
+    	Map<String,List<String>> outgoing_3 = new HashMap<String, List<String>>();
+    	outgoing_3.put("4.html",Arrays.asList("4"));
+    	outgoing_3.put("5.html",Arrays.asList("5"));    	    	
     	graph.addPage("3.html", outgoing_3);
     	
         assertEquals(6, graph.getTotalPageCount());
@@ -59,18 +64,19 @@ public class WebGraphTest {
     @Test
     public void testIncomingLinks() {
     	WebGraph graph = new WebGraph();
-    	Vector<String> outgoing_1 = new Vector<>();
-    	outgoing_1.add("2.html");
-    	outgoing_1.add("3.html");    	
+    	Map<String,List<String>> outgoing_1 = new HashMap<String, List<String>>();
+    	outgoing_1.put("2.html",Arrays.asList("2"));
+    	outgoing_1.put("3.html",Arrays.asList("3"));   	    	
     	graph.addPage("1.html", outgoing_1);
-    	Vector<String> outgoing_2 = new Vector<>();
-    	outgoing_2.add("4.html");
-    	outgoing_2.add("6.html");
+    	
+    	Map<String,List<String>> outgoing_2 = new HashMap<String, List<String>>();
+    	outgoing_2.put("6.html",Arrays.asList("6"));
+    	outgoing_2.put("4.html",Arrays.asList("4"));
     	graph.addPage("2.html", outgoing_2);    	
     	
-    	Vector<String> outgoing_3 = new Vector<>();
-    	outgoing_3.add("4.html");
-    	outgoing_3.add("5.html");
+    	Map<String,List<String>> outgoing_3 = new HashMap<String, List<String>>();
+    	outgoing_3.put("4.html",Arrays.asList("4"));
+    	outgoing_3.put("5.html",Arrays.asList("5"));    	    	
     	graph.addPage("3.html", outgoing_3);
     	
         assertEquals(6, graph.getTotalPageCount());
@@ -82,24 +88,24 @@ public class WebGraphTest {
     @Test
     public void testOutgoingLinksCounts() {
     	WebGraph graph = new WebGraph();
-    	Vector<String> outgoing_1 = new Vector<>();
-    	outgoing_1.add("2.html");
-    	outgoing_1.add("3.html");
-    	outgoing_1.add("4.html");
+    	Map<String,List<String>> outgoing_1 = new HashMap<String, List<String>>();
+    	outgoing_1.put("2.html",Arrays.asList("2"));
+    	outgoing_1.put("3.html",Arrays.asList("3"));
+    	outgoing_1.put("4.html",Arrays.asList("4"));    	
     	graph.addPage("1.html", outgoing_1);
-    	
-    	Vector<String> outgoing_2 = new Vector<>();
-    	outgoing_2.add("3.html");
-    	outgoing_2.add("4.html");
+
+    	Map<String,List<String>> outgoing_2 = new HashMap<String, List<String>>();
+    	outgoing_2.put("3.html",Arrays.asList("3"));
+    	outgoing_2.put("4.html",Arrays.asList("4"));
     	graph.addPage("2.html", outgoing_2);    	
     	
-    	Vector<String> outgoing_3 = new Vector<>();
-    	outgoing_3.add("1.html");
+    	Map<String,List<String>> outgoing_3 = new HashMap<String, List<String>>();
+    	outgoing_3.put("1.html",Arrays.asList("1"));
     	graph.addPage("3.html", outgoing_3);
     	
-    	Vector<String> outgoing_4 = new Vector<>();
-    	outgoing_4.add("1.html");
-    	outgoing_4.add("3.html");
+    	Map<String,List<String>> outgoing_4 = new HashMap<String, List<String>>();
+    	outgoing_4.put("1.html",Arrays.asList("1"));
+    	outgoing_4.put("3.html",Arrays.asList("3"));    	
     	graph.addPage("4.html", outgoing_4);
 
         assertEquals(3, graph.getOutgoingLinks("1.html").size());
