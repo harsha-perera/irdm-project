@@ -59,7 +59,7 @@ public class RunQuery {
 	public static void main(String[] args) {
 		TerrierInitialiser.InitTerrier();
 		try {
-			batchSearch(ApplicationConfig.HomePath + File.separator + "QueryTerms.csv", RetrievalModelNames.BM25, false, ApplicationConfig.HomePath + File.separator + "QueryResults.csv");
+			batchSearch(ApplicationConfig.HomePath + File.separator + "QueryTerms.csv", RetrievalModelNames.BM25, false, ApplicationConfig.HomePath + File.separator + "QueryResultsBM25.csv");
 			System.out.println("Finished Batch Search");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -132,6 +132,15 @@ public class RunQuery {
 		// Open the output file
 		FileWriter fileWriter = new FileWriter(resultFileName);
 		CSVPrinter csvWriter = new CSVPrinter(fileWriter, csvFormat);
+		// Output header record
+		List<String> header = new ArrayList<>();
+		header.add("Query ID");
+		header.add("Rank");
+		header.add("Result Url");
+		header.add("Retrieval Model");
+		header.add("Score");
+		csvWriter.printRecord(header);
+		
 		Iterable<CSVRecord> records = csvFormat.parse(in);
 		java.util.Iterator<CSVRecord> recordsIterator = records.iterator();
 		if(recordsIterator.hasNext()){
@@ -156,6 +165,7 @@ public class RunQuery {
 			ResultSet result = srq.getResultSet();
 			// Output the top 10 results
 			String[] urls = result.getMetaItems("url");
+			double[] scores = result.getScores();
 			for (int i = 0; i < 10 && i < urls.length; i++) {
 
 				List<String> queryResult = new ArrayList<>();
@@ -163,6 +173,7 @@ public class RunQuery {
 				queryResult.add(Integer.toString(i + 1));
 				queryResult.add(urls[i]);
 				queryResult.add(retrievalModelName);
+				queryResult.add(String.valueOf(scores[i]));
 				csvWriter.printRecord(queryResult);
 			}
 		}
