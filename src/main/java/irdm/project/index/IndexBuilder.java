@@ -9,7 +9,7 @@ import irdm.project.pagerank.PageRankCalculator;
 import irdm.project.pagerank.TerrierFeatureScoreWriter;
 import irdm.project.pagerank.WebGraph;
 import irdm.project.run.ApplicationConfig;
-
+import irdm.project.run.IndexNames;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -61,16 +61,14 @@ public class IndexBuilder {
 	private MemoryIndex memIndex; 
 	private MemoryIndex pagerankAnchorTextIndex;
 	private String indexPath;
-	private String anchorTextIndexPath;
 	private String crawlPath;
 	private String url;
 	private int linkdepth;
 	private HashMap<String, Double> pageRank;
 	private WebGraph g;
 	
-	public IndexBuilder(String crawlPath, String indexPath, String anchorTextIndexPath, String url, int linkdepth ){
+	public IndexBuilder(String crawlPath, String indexPath, String url, int linkdepth ){
 		this.indexPath = indexPath;
-		this.anchorTextIndexPath = anchorTextIndexPath;
 		this.crawlPath = crawlPath;
 		this.url = url;
 		this.linkdepth = linkdepth;
@@ -80,7 +78,7 @@ public class IndexBuilder {
 		g = new WebGraph();
 	}
 	
-	private void writeIndex(String prefix) {		
+	private void writeIndex(MemoryIndex index, String indexPath, String prefix) {		
 		try {
 			File dir = new File(indexPath);
 
@@ -88,11 +86,11 @@ public class IndexBuilder {
 				dir.mkdirs();
 			}
 			
-			memIndex.write(indexPath, prefix);
+			index.write(indexPath, prefix);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
-		}		
+		}				
 	}
 	
 	public void indexWebsite() {							
@@ -165,21 +163,7 @@ public class IndexBuilder {
 				e.printStackTrace();
 			}			
 		}
-		
-		try {
-			File dir = new File(anchorTextIndexPath);
-
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
-			
-			index.write(anchorTextIndexPath, "anchordata");
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}		
-		
-		
+		writeIndex(index, indexPath, IndexNames.Anchor);				
 	}
 
 	private void addAnchorTextToIndex(WebGraph g, MemoryIndex index){
@@ -219,10 +203,9 @@ public class IndexBuilder {
 	
 	
 	public void write(){
-		//addAnchorTextToIndex(g, memIndex);
-		writeIndex("data");
+		writeIndex(this.memIndex, this.indexPath, IndexNames.Data);
 		addAnchorTextToIndex(g, memIndex);
-		writeIndex("data_incominglinks");
+		writeIndex(this.memIndex, this.indexPath, IndexNames.Data_Anchor);
 		writePageRankAnchorTextIndex(g, pagerankAnchorTextIndex);
 		TerrierFeatureScoreWriter writer = new TerrierFeatureScoreWriter(ApplicationConfig.PageRankScoreFilePath);
         try {

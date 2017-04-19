@@ -15,7 +15,7 @@ public class RunIndexing {
 	public static void main(String[] args) {
 		TerrierInitialiser.InitTerrier();
 		IndexBuilder indexBuilder = new IndexBuilder(ApplicationConfig.CrawlPath, ApplicationConfig.IndexPath,
-				ApplicationConfig.AnchorIndexPath, ApplicationConfig.SeedUrl, ApplicationConfig.CrawlMaxDepth);
+				ApplicationConfig.SeedUrl, ApplicationConfig.CrawlMaxDepth);
 		indexBuilder.indexWebsite();
 		indexBuilder.write();
 	}

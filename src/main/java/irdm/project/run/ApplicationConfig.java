@@ -21,7 +21,6 @@ public class ApplicationConfig {
 	public static String stopWordListPath = "C:/TerrierSearchEngine/stopword-list.txt";
 
 	public static String IndexPath = HomePath + File.separator + "IndexData";
-	public static String AnchorIndexPath = HomePath + File.separator + "AnchorTextIndexData";
 	public static String CrawlPath = HomePath + File.separator + "CrawlData";
 
 	public static int CrawlMaxDepth = 10;
@@ -34,7 +33,7 @@ public class ApplicationConfig {
 	public static int PageRankMaxIterations = 10;
 	public static double PageRankTeleportProbability = 0.15;
 	public static double PageRankWeighting = 0.5;
-	public static String PageRankScoreFilePath = AnchorIndexPath + File.separator + "pagerankscores.dat";
+	public static String PageRankScoreFilePath = IndexPath + File.separator + "pagerankscores.dat";
 
 	static {
 		// TODO: Change this to get the home path from the command line
@@ -58,11 +57,6 @@ public class ApplicationConfig {
 				if (IndexPath == null || IndexPath.isEmpty()) {
 					IndexPath = HomePath + File.separator + "index";
 				}
-
-				AnchorIndexPath = config.getString("anchorindexpath");
-				if (AnchorIndexPath == null || AnchorIndexPath.isEmpty()) {
-					AnchorIndexPath = HomePath + File.separator + "anchorindex";
-				}
 				
 				CrawlPath = config.getString("crawlpath");
 				if (CrawlPath == null || CrawlPath.isEmpty()) {
@@ -79,7 +73,7 @@ public class ApplicationConfig {
 				PageRankWeighting = config.getDouble("pagerankweighting");
 				PageRankScoreFilePath = config.getString("pagerankscorefilepath");
 				if (PageRankScoreFilePath == null || PageRankScoreFilePath.isEmpty()) {
-					PageRankScoreFilePath = AnchorIndexPath + File.separator + "pagerankscores.dat";
+					PageRankScoreFilePath = IndexPath + File.separator + "pagerankscores.dat";
 				}
 				// access configuration properties
 			} catch (ConfigurationException cex) {
