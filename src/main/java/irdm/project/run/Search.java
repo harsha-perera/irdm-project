@@ -33,6 +33,7 @@ public class Search {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		//args = new String[]{"C:\\Users\\Harsha\\workspace\\Terrier", "q", "BM25", "krinke"};
 		// Args - home dir path, i to index
 		//        home dir path, q retrievalModelName "query terms" to run a single query
 		//        home dir path, bq retrievalModelName "query file path" "result path" to run a batch of queries and save the output
@@ -52,7 +53,10 @@ public class Search {
 			System.out.println("Finished indexing");
 			break;
 			
-		case "q":			
+		case "q":
+			if (args.length<4){
+				System.err.println("Insufficient arguments for batch query command");
+			}			
 			search(args[3], ApplicationConfig.UsePageRank, args[2]);
 			break;
 			
@@ -82,6 +86,18 @@ public class Search {
 	}
 	
 	public static void search(String query, boolean usePageRank, String retrievalModelName) {	
+		ApplicationSetup.setProperty("querying.postprocesses.order", "QueryExpansion");
+		ApplicationSetup.setProperty("querying.postprocesses.controls", "qe:QueryExpansion");
+		ApplicationSetup.setProperty("querying.postfilters.order", "SimpleDecorate,SiteFilter,Scope");
+		ApplicationSetup.setProperty("querying.postfilters.controls",
+				"decorate:SimpleDecorate,site:SiteFilter,scope:Scope");
+		ApplicationSetup.setProperty("querying.default.controls", "");
+		ApplicationSetup.setProperty("querying.allowed.controls", "scope,qe,qemodel,start,end,site,scope");
+		// Document Score Modifier for PageRank
+		if (ApplicationConfig.UsePageRank) {
+			ApplicationSetup.setProperty("matching.dsms", TerrierPageRankScoreModifier.class.getName());
+		}
+		
 		Index searchIndex;
 		if(!usePageRank){
 			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data);
