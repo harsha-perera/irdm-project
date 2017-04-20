@@ -35,55 +35,54 @@ public class ApplicationConfig {
 	public static double PageRankWeighting = 0.5;
 	public static String PageRankScoreFilePath = IndexPath + File.separator + "pagerankscores.dat";
 
-	static {
-		// TODO: Change this to get the home path from the command line
-		File configFile = new File("C:/Users/Harsha/workspace/Terrier/etc/engine.properties");
-		if (configFile.exists()) {
+	public static void init(String homePath) {
+		HomePath = homePath;
+		File configFile = new File(HomePath + File.separator + "etc" + File.separator + "engine.properties");
+		if (!configFile.exists()) {
+			return;
+		}
+		Configurations configs = new Configurations();
+		try {
 
-			Configurations configs = new Configurations();
-			try {
+			Configuration config = configs.properties(configFile);
 
-				Configuration config = configs.properties(configFile);
+			SeedUrl = config.getString("seedurl");
+			HomePath = config.getString("homepath");
 
-				SeedUrl = config.getString("seedurl");
-				HomePath = config.getString("homepath");
-
-				stopWordListPath = config.getString("stoplistpath");
-				if (stopWordListPath == null || stopWordListPath.isEmpty()) {
-					stopWordListPath = HomePath + File.separator + "etc" + File.separator + "stopword-list.txt";
-				}
-
-				IndexPath = config.getString("indexpath");
-				if (IndexPath == null || IndexPath.isEmpty()) {
-					IndexPath = HomePath + File.separator + "index";
-				}
-				
-				CrawlPath = config.getString("crawlpath");
-				if (CrawlPath == null || CrawlPath.isEmpty()) {
-					CrawlPath = HomePath + File.separator + "crawl";
-				}
-
-				CrawlMaxDepth = config.getInt("crawlmaxdepth");
-
-				NumberOfCrawlers = config.getInt("numberofcrawlers");
-
-				UsePageRank = config.getBoolean("usepagerank");
-				PageRankMaxIterations = config.getInt("pagerankmaxiterations");
-				PageRankTeleportProbability = config.getDouble("pagerankteleportprobability");
-				PageRankWeighting = config.getDouble("pagerankweighting");
-				PageRankScoreFilePath = config.getString("pagerankscorefilepath");
-				if (PageRankScoreFilePath == null || PageRankScoreFilePath.isEmpty()) {
-					PageRankScoreFilePath = IndexPath + File.separator + "pagerankscores.dat";
-				}
-				// access configuration properties
-			} catch (ConfigurationException cex) {
-				// TODO: If the file isn't there populate it with default
-				// values.
-				System.out.println(cex.getMessage());
+			stopWordListPath = config.getString("stoplistpath");
+			if (stopWordListPath == null || stopWordListPath.isEmpty()) {
+				stopWordListPath = HomePath + File.separator + "etc" + File.separator + "stopword-list.txt";
 			}
-			catch (Exception e){
-				System.out.println(e.getMessage());
+
+			IndexPath = config.getString("indexpath");
+			if (IndexPath == null || IndexPath.isEmpty()) {
+				IndexPath = HomePath + File.separator + "index";
 			}
+
+			CrawlPath = config.getString("crawlpath");
+			if (CrawlPath == null || CrawlPath.isEmpty()) {
+				CrawlPath = HomePath + File.separator + "crawl";
+			}
+
+			CrawlMaxDepth = config.getInt("crawlmaxdepth");
+
+			NumberOfCrawlers = config.getInt("numberofcrawlers");
+
+			UsePageRank = config.getBoolean("usepagerank");
+			PageRankMaxIterations = config.getInt("pagerankmaxiterations");
+			PageRankTeleportProbability = config.getDouble("pagerankteleportprobability");
+			PageRankWeighting = config.getDouble("pagerankweighting");
+			PageRankScoreFilePath = config.getString("pagerankscorefilepath");
+			if (PageRankScoreFilePath == null || PageRankScoreFilePath.isEmpty()) {
+				PageRankScoreFilePath = IndexPath + File.separator + "pagerankscores.dat";
+			}
+			// access configuration properties
+		} catch (ConfigurationException cex) {
+			// TODO: If the file isn't there populate it with default
+			// values.
+			System.out.println(cex.getMessage());
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 
 	}

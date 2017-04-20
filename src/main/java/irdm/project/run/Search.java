@@ -3,7 +3,6 @@
  */
 package irdm.project.run;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,22 +10,111 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.csv.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.Manager;
 import org.terrier.querying.SearchRequest;
 import org.terrier.structures.Index;
 import org.terrier.utility.ApplicationSetup;
 
+import irdm.project.index.IndexBuilder;
 import irdm.project.pagerank.TerrierPageRankScoreModifier;
 
 /**
- * @author Shruti Sinha
  * @author Harsha Perera
  *
+ * Top level class for running the crawl and search commands
  */
-public class RunQuery {
-	static {
+public class Search {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// Args - home dir path, i to index
+		//        home dir path, q retrievalModelName "query terms" to run a single query
+		//        home dir path, bq retrievalModelName "query file path" "result path" to run a batch of queries and save the output
+		if(args==null || args.length < 2){
+			// Incorrect number of args		
+			System.err.println("Incorrect usage");
+			return;
+		}
+		String homePath = args[0];
+		ApplicationConfig.init(homePath);
+		TerrierInitialiser.InitTerrier();
+		
+		String cmd = args[1].toLowerCase();
+		switch(cmd){
+		case "i":
+			indexSite();
+			System.out.println("Finished indexing");
+			break;
+			
+		case "q":			
+			search(args[3], ApplicationConfig.UsePageRank, args[2]);
+			break;
+			
+		case "bq":
+			if (args.length<5){
+				System.err.println("Insufficient arguments for batch query command");
+			}
+			try {
+				batchSearch(args[3], args[2], ApplicationConfig.UsePageRank, args[4]);
+				System.out.println("Finished Batch Search");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			default:
+				System.err.println("Unsupported command");
+
+		}
+	}
+	
+	public static void indexSite() {		
+		IndexBuilder indexBuilder = new IndexBuilder(ApplicationConfig.CrawlPath, ApplicationConfig.IndexPath,
+				ApplicationConfig.SeedUrl, ApplicationConfig.CrawlMaxDepth);
+		indexBuilder.indexWebsite();
+		indexBuilder.write();
+	}
+	
+	public static void search(String query, boolean usePageRank, String retrievalModelName) {	
+		Index searchIndex;
+		if(!usePageRank){
+			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data);
+		}
+		else{
+			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data_Anchor);
+		}
+
+		StringBuffer sb = new StringBuffer();
+
+		sb.append(query);
+
+		Manager queryingManager = new Manager(searchIndex);
+
+		SearchRequest srq = queryingManager.newSearchRequest("query", sb.toString());
+		srq.addMatchingModel("Matching",retrievalModelName);
+		srq.setOriginalQuery(sb.toString());
+		srq.setControl("decorate", "on");
+		queryingManager.runPreProcessing(srq);
+		queryingManager.runMatching(srq);
+		queryingManager.runPostProcessing(srq);
+		queryingManager.runPostFilters(srq);
+		ResultSet result = srq.getResultSet();
+		
+		String[] urls = result.getMetaItems("url");
+		double[] scores = result.getScores();
+
+		for (int i = 0; i<20 && i < scores.length; i++)
+			System.out.println(urls[i] + ", Score:" + scores[i]);		
+	}
+	
+	
+	public static void batchSearch(String queryFileName, String retrievalModelName, boolean usePageRank, String resultFileName) throws IOException {
 		ApplicationSetup.setProperty("querying.postprocesses.order", "QueryExpansion");
 		ApplicationSetup.setProperty("querying.postprocesses.controls", "qe:QueryExpansion");
 		ApplicationSetup.setProperty("querying.postfilters.order", "SimpleDecorate,SiteFilter,Scope");
@@ -38,77 +126,15 @@ public class RunQuery {
 		if (ApplicationConfig.UsePageRank) {
 			ApplicationSetup.setProperty("matching.dsms", TerrierPageRankScoreModifier.class.getName());
 		}
-	}
 
-	/**
-	 * @param args
-	 */
-	public static void main1(String[] args) {
-		TerrierInitialiser.InitTerrier();
-		ResultSet result = search("jens krinke", true);
-		//ResultSet result = search("news");
-
-		String[] urls = result.getMetaItems("url");
-		double[] scores = result.getScores();
-
-		for (int i = 0; i<20 && i < scores.length; i++)
-			System.out.println(urls[i] + ", Score:" + scores[i]);
-	}
-
-	public static void main(String[] args) {
-		TerrierInitialiser.InitTerrier();
-		try {
-			batchSearch(ApplicationConfig.HomePath + File.separator + "QueryTerms.csv", RetrievalModelNames.BM25, true, ApplicationConfig.HomePath + File.separator + "QueryResultsBM25_LinkAnalysis_PageRank1.csv");
-			System.out.println("Finished Batch Search");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}    	
-	}
-	
-	public static ResultSet search(String query, boolean usePageRank) {	
-		Index searchIndex;
-		if(!usePageRank){
-			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data);
-		}
-		else{
-			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data_Anchor);
-		}
-
-		/*if (ApplicationConfig.UsePageRank) {
-			Index anchorIndex = Index.createIndex(ApplicationConfig.AnchorIndexPath, IndexNames.Anchor);
-			searchIndex = new MultiIndex(new Index[] { searchIndex, anchorIndex });
-		}*/
 		
-		StringBuffer sb = new StringBuffer();
-
-		sb.append(query);
-
-		//Manager queryingManager = new Manager(index);
-		Manager queryingManager = new Manager(searchIndex);
-
-		SearchRequest srq = queryingManager.newSearchRequest("query", sb.toString());
-		srq.addMatchingModel("Matching","TF_IDF");
-		//srq.addMatchingModel("Matching","DirichletLM");
-		//srq.addMatchingModel("Matching", "BM25"); // http://terrier.org/docs/v4.0/javadoc/org/terrier/matching/models/package-summary.html
-		srq.setOriginalQuery(sb.toString());
-		srq.setControl("decorate", "on");
-		queryingManager.runPreProcessing(srq);
-		queryingManager.runMatching(srq);
-		queryingManager.runPostProcessing(srq);
-		queryingManager.runPostFilters(srq);
-		return srq.getResultSet();
-	}
-	
-	
-	public static void batchSearch(String queryFileName, String retrievalModelName, boolean usePageRank, String resultFileName) throws IOException {
 		// QueryFile format - topicid, topic, query id, query text
-		final int topic_id_idx = 0;
-		final int topic_idx = 1;
-		final int query_idx = 2;		
-		final int query_id_idx = 3;
+//		final int topic_id_idx = 0;
+//		final int topic_idx = 1;
+		final int query_id_idx = 0;
+		final int query_idx = 1;				
 		
-		// Result file format - query id, rank, result url, algorithm??
+		// Result file format - query id, rank, result url, algorithm
 		
 		// Work out which search index to use from the input parameters		
 		Index searchIndex;
@@ -118,10 +144,6 @@ public class RunQuery {
 		else{
 			searchIndex = Index.createIndex(ApplicationConfig.IndexPath, IndexNames.Data_Anchor);
 		}
-		/*if (ApplicationConfig.UsePageRank) {
-			Index anchorIndex = Index.createIndex(ApplicationConfig.AnchorIndexPath, IndexNames.Anchor);
-			searchIndex = new MultiIndex(new Index[] { searchIndex, anchorIndex });
-		}*/
 		
 		CSVFormat csvFormat = CSVFormat.DEFAULT;
 		Manager queryingManager = new Manager(searchIndex);
